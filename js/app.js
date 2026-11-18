@@ -38,9 +38,13 @@
   }
   const rand = (n) => Math.floor(Math.random() * n);
 
+  // The stage is landscape. On a phone held upright we draw it turned 90° so it
+  // still fills the screen — the player simply turns the phone sideways.
   function fit() {
-    const s = Math.min(window.innerWidth / W, window.innerHeight / H);
-    stage.style.transform = `translate(-50%, -50%) scale(${s})`;
+    const vw = window.innerWidth, vh = window.innerHeight;
+    const turned = vh > vw && vw < 700;
+    const s = turned ? Math.min(vh / W, vw / H) : Math.min(vw / W, vh / H);
+    stage.style.transform = `translate(-50%, -50%) ${turned ? "rotate(90deg) " : ""}scale(${s})`;
   }
 
   function show(name) {
@@ -144,12 +148,12 @@
     if (!raf) g.clearRect(0, 0, W, H);
   }
 
-  // Centre of an element in stage coordinates (undoes the stage scale).
+  // Centre of an element in stage coordinates (layout offsets, so it is
+  // unaffected by the stage being scaled or turned).
   function centreOf(el) {
-    const s = stage.getBoundingClientRect();
-    const r = el.getBoundingClientRect();
-    const k = W / s.width;
-    return [(r.left + r.width / 2 - s.left) * k, (r.top + r.height / 2 - s.top) * k];
+    let x = el.offsetWidth / 2, y = el.offsetHeight / 2;
+    for (let n = el; n && n !== stage; n = n.offsetParent) { x += n.offsetLeft; y += n.offsetTop; }
+    return [x, y];
   }
 
   /* ---------- floating hearts ---------- */
@@ -461,6 +465,7 @@
   });
 
   window.addEventListener("resize", fit);
+  window.addEventListener("orientationchange", () => setTimeout(fit, 200));
   document.addEventListener("dragstart", (e) => e.preventDefault());
   document.addEventListener("contextmenu", (e) => e.preventDefault());
 
