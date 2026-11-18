@@ -46,4 +46,4 @@ Department of Health guidance and **should be reviewed by the organiser before t
 - `css/style.css` — all styling and animations
 - `js/questions.js` — the question bank
 - `js/app.js` — game logic, roulette, synthesised sound effects, confetti
-- `assets/backdrop-v5.webp` — event backdrop artwork
+- `assets/backdrop-v6.webp` — event backdrop artwork
