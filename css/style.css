@@ -41,7 +41,7 @@ button:focus { outline: none; }
 /* Blurred fill behind the stage when the screen is not 16:9 */
 #bg {
   position: fixed; inset: -40px;
-  background: url("../assets/backdrop-v7.webp") center / cover no-repeat;
+  background: url("../assets/backdrop-v8.webp") center / cover no-repeat;
   filter: blur(28px) saturate(1.1);
   opacity: .75;
 }
@@ -56,7 +56,7 @@ button:focus { outline: none; }
 
 .backdrop {
   position: absolute; inset: 0;
-  background: url("../assets/backdrop-v7.webp") center / cover no-repeat;
+  background: url("../assets/backdrop-v8.webp") center / cover no-repeat;
 }
 .backdrop.soft {
   inset: -30px;
