@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-HK">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>愛伴成長 ・ 育嬰知識大挑戰</title>
+  <link rel="preload" as="image" href="assets/backdrop.webp">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div id="bg" aria-hidden="true"></div>
+
+  <main id="stage">
+    <div class="backdrop" aria-hidden="true"></div>
+    <div class="backdrop soft" aria-hidden="true"></div>
+    <div id="floaters" aria-hidden="true"></div>
+
+    <!-- 1. 開始畫面 -->
+    <section id="screen-start" class="screen active">
+      <div class="start-box">
+        <div class="start-tag">育嬰知識大挑戰</div>
+        <button id="btn-start" class="btn btn-primary btn-xl" type="button">
+          <span class="btn-shine"></span>開始挑戰
+        </button>
+        <div class="start-rules">
+          <span>每人 3 題</span>
+          <span>🥇 全對</span>
+          <span>🥈 對 2 題</span>
+          <span>🥉 對 1 題</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. 九宮格抽題 -->
+    <section id="screen-grid" class="screen">
+      <div class="panel panel-grid">
+        <header class="panel-head">
+          <div class="pill" id="grid-round">第 1 題</div>
+          <div class="dots" id="grid-dots"></div>
+        </header>
+        <h2 class="grid-title" id="grid-title">按下按鈕，抽出你的題目！</h2>
+        <div class="grid" id="grid"></div>
+        <button id="btn-spin" class="btn btn-primary btn-lg" type="button">
+          <span class="btn-shine"></span>🎲 抽題目
+        </button>
+      </div>
+    </section>
+
+    <!-- 3. 題目 -->
+    <section id="screen-question" class="screen">
+      <div class="panel panel-question">
+        <header class="panel-head">
+          <div class="pill" id="q-round">第 1 題</div>
+          <div class="q-badge" id="q-badge"></div>
+          <div class="dots" id="q-dots"></div>
+        </header>
+        <h2 class="q-text" id="q-text"></h2>
+        <div class="options" id="options"></div>
+        <div class="feedback" id="feedback">
+          <div class="feedback-row">
+            <div class="verdict" id="verdict"></div>
+            <button id="btn-next" class="btn btn-primary btn-md" type="button">下一題 ➜</button>
+          </div>
+          <p class="explain"><span class="explain-label">💡 解答</span><span id="explain"></span></p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. 頒獎 -->
+    <section id="screen-result" class="screen">
+      <div class="panel panel-result" id="result-panel">
+        <div class="suspense" id="suspense">成績揭曉<span>.</span><span>.</span><span>.</span></div>
+        <div class="award" id="award">
+          <div class="medal-wrap">
+            <div class="rays"></div>
+            <div class="medal" id="medal"></div>
+            <i class="spark s1">✦</i><i class="spark s2">✦</i><i class="spark s3">✦</i><i class="spark s4">✦</i>
+          </div>
+          <h2 class="award-title" id="award-title"></h2>
+          <p class="award-sub" id="award-sub"></p>
+          <div class="chips" id="chips"></div>
+          <button id="btn-again" class="btn btn-primary btn-lg" type="button">
+            <span class="btn-shine"></span>下一位參加者 ➜
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 工具列 -->
+    <nav class="toolbar">
+      <button id="btn-sound" class="tool" type="button" title="音效 開／關">🔊</button>
+      <button id="btn-full" class="tool" type="button" title="全螢幕">⛶</button>
+      <button id="btn-reset" class="tool tool-wide" type="button" title="重新開始（下一位參加者）">↺ 重新開始</button>
+    </nav>
+
+    <!-- 重設確認 -->
+    <div class="modal" id="modal">
+      <div class="modal-card">
+        <div class="modal-emoji">🧸</div>
+        <h3>重新開始？</h3>
+        <p>目前的作答紀錄會清除，換下一位參加者。</p>
+        <div class="modal-actions">
+          <button id="btn-cancel" class="btn btn-ghost btn-md" type="button">繼續作答</button>
+          <button id="btn-confirm" class="btn btn-primary btn-md" type="button">重新開始</button>
+        </div>
+      </div>
+    </div>
+
+    <canvas id="fx" width="1600" height="900" aria-hidden="true"></canvas>
+  </main>
+
+  <script src="js/questions.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
