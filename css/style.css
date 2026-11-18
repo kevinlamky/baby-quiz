@@ -208,7 +208,10 @@ button:focus { outline: none; }
   transition: transform .12s ease, box-shadow .12s ease, filter .3s ease;
   animation: tileIn .5s cubic-bezier(.2, 1.4, .4, 1) backwards;
 }
-.tile { background: linear-gradient(160deg, #ffc9cc, #f58d94); }
+.tile:nth-child(3n+1) { background: linear-gradient(160deg, #ffc9cc, #f58d94); }
+.tile:nth-child(3n+2) { background: linear-gradient(160deg, #c5ecfb, #7fcdee); }
+.tile:nth-child(3n)   { background: linear-gradient(160deg, #fff0a3, #ffd43b); }
+.tile:nth-child(n+4):nth-child(-n+6) { filter: hue-rotate(-8deg); }
 @keyframes tileIn { from { transform: scale(0) rotate(-12deg); opacity: 0; } }
 .tile-num {
   font-size: 84px; font-weight: 900; line-height: 1; color: #fff;
