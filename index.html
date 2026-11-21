@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
   <title>愛伴成長 ・ 育嬰知識大挑戰</title>
-  <link rel="preload" as="image" href="assets/backdrop-v8.webp">
-  <link rel="stylesheet" href="css/style.css?v=12">
+  <link rel="preload" as="image" href="assets/backdrop-v9.webp">
+  <link rel="stylesheet" href="css/style.css?v=13">
 </head>
 <body>
   <div id="bg" aria-hidden="true"></div>
@@ -52,6 +52,10 @@
         <header class="panel-head">
           <div class="pill" id="q-round">第 1 題</div>
           <div class="q-badge" id="q-badge"></div>
+          <div class="timer" id="timer" title="剩餘時間">
+            <svg viewBox="0 0 80 80"><circle class="timer-track" cx="40" cy="40" r="33"/><circle class="timer-ring" id="timer-ring" cx="40" cy="40" r="33"/></svg>
+            <span id="timer-num">15</span>
+          </div>
           <div class="dots" id="q-dots"></div>
         </header>
         <h2 class="q-text" id="q-text"></h2>
@@ -109,7 +113,7 @@
     <canvas id="fx" width="1600" height="900" aria-hidden="true"></canvas>
   </main>
 
-  <script src="js/questions.js?v=12"></script>
-  <script src="js/app.js?v=12"></script>
+  <script src="js/questions.js?v=13"></script>
+  <script src="js/app.js?v=13"></script>
 </body>
 </html>

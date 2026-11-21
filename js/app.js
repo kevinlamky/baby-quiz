@@ -8,6 +8,7 @@
 
   const QUESTIONS = window.QUIZ_QUESTIONS;
   const ROUNDS = 3;
+  const TIME_LIMIT = window.QUIZ_TIME_LIMIT === undefined ? 15 : window.QUIZ_TIME_LIMIT; // seconds, 0 = off
   const LETTERS = ["A", "B", "C", "D"];
   const W = 1600, H = 900;
 
@@ -77,6 +78,7 @@
       osc.start(t);
       osc.stop(t + dur + 0.05);
     },
+    hurry() { this.tone(988, 0.09, { type: "square", vol: 0.07 }); },
     click() { this.tone(660, 0.09, { type: "triangle", slide: 990 }); },
     tick(p) { this.tone(700 + p * 500, 0.07, { type: "square", vol: 0.06 }); },
     chosen() { [784, 988, 1175, 1568].forEach((f, i) => this.tone(f, 0.22, { type: "triangle", at: i * 0.09 })); },
@@ -278,10 +280,52 @@
       box.appendChild(b);
     });
     show("question");
+    startTimer();
+  }
+
+  /* ---------- countdown ---------- */
+
+  const RING = 2 * Math.PI * 33;
+  let timerId = 0;
+
+  function paintTimer(left) {
+    $("#timer-ring").style.strokeDashoffset = RING * (1 - left / TIME_LIMIT);
+    $("#timer-num").textContent = Math.ceil(left);
+    $("#timer").classList.toggle("hurry", left <= 5 && left > 0);
+  }
+
+  function stopTimer() {
+    clearInterval(timerId);
+    timerId = 0;
+    $("#timer").classList.remove("hurry");
+    $("#timer").classList.add("stopped");
+  }
+
+  function startTimer() {
+    clearInterval(timerId);
+    const el = $("#timer");
+    el.style.display = TIME_LIMIT ? "" : "none";
+    if (!TIME_LIMIT) return;
+    el.classList.remove("stopped");
+    paintTimer(TIME_LIMIT);
+    // Start counting once the options have finished animating in.
+    later(() => {
+      if (state.answered || state.screen !== "question") return;
+      const end = performance.now() + TIME_LIMIT * 1000;
+      let lastBeep = 6;
+      timerId = setInterval(() => {
+        const left = Math.max(0, (end - performance.now()) / 1000);
+        paintTimer(left);
+        const sec = Math.ceil(left);
+        if (sec <= 5 && sec < lastBeep && sec > 0) { lastBeep = sec; Sound.hurry(); }
+        if (left <= 0) answer(-1); // time's up counts as a wrong answer
+      }, 100);
+    }, 900);
   }
 
   function answer(k) {
     if (state.answered || state.screen !== "question") return;
+    stopTimer();
     state.answered = true;
     const q = QUESTIONS[state.current];
     const ok = k === q.answer;
@@ -299,10 +343,10 @@
     renderDots($("#q-dots"));
 
     const verdict = $("#verdict");
-    verdict.className = "verdict " + (ok ? "ok" : "no");
+    verdict.className = "verdict " + (ok ? "ok" : k < 0 ? "time" : "no");
     verdict.innerHTML = ok
       ? "🎉 答對了！"
-      : `😮 答錯了<small>正確答案是 ${LETTERS[q.answer]}</small>`;
+      : `${k < 0 ? "⏰ 時間到" : "😮 答錯了"}<small>正確答案是 ${LETTERS[q.answer]}</small>`;
     $("#explain").textContent = q.explain;
     $("#btn-next").textContent = state.results.length < ROUNDS ? "下一題 ➜" : "看成績 🏅";
     $("#feedback").classList.add("show");
@@ -382,6 +426,7 @@
   /* ---------- start / reset ---------- */
 
   function resetState() {
+    stopTimer();
     state.gen++;
     state.status = QUESTIONS.map(() => null);
     state.results = [];

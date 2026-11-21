@@ -9,6 +9,9 @@
  *   answer   正確答案的位置：0 = A，1 = B，2 = C，3 = D
  *   explain  解答說明
  */
+// 每題作答時限（秒）。改成 0 即取消倒數計時。
+window.QUIZ_TIME_LIMIT = 15;
+
 window.QUIZ_QUESTIONS = [
   {
     icon: "🍼",

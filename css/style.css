@@ -41,7 +41,7 @@ button:focus { outline: none; }
 /* Blurred fill behind the stage when the screen is not 16:9 */
 #bg {
   position: fixed; inset: -40px;
-  background: url("../assets/backdrop-v8.webp") center / cover no-repeat;
+  background: url("../assets/backdrop-v9.webp") center / cover no-repeat;
   filter: blur(28px) saturate(1.1);
   opacity: .75;
 }
@@ -56,7 +56,7 @@ button:focus { outline: none; }
 
 .backdrop {
   position: absolute; inset: 0;
-  background: url("../assets/backdrop-v8.webp") center / cover no-repeat;
+  background: url("../assets/backdrop-v9.webp") center / cover no-repeat;
 }
 .backdrop.soft {
   inset: -30px;
@@ -259,6 +259,21 @@ button:focus { outline: none; }
   background: #fdeee6; padding: 6px 24px; border-radius: 999px;
   margin-right: auto;
 }
+/* countdown ring */
+.timer { position: relative; width: 76px; height: 76px; margin: -13px 6px -13px 0; flex: none; }
+.timer svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.timer circle { fill: none; stroke-width: 9; }
+.timer-track { stroke: #f4e6df; }
+.timer-ring { stroke: var(--blue-deep); stroke-linecap: round; stroke-dasharray: 207.35; stroke-dashoffset: 0; transition: stroke .3s; }
+.timer span {
+  position: absolute; inset: 0; display: grid; place-items: center;
+  font-size: 34px; font-weight: 900; color: var(--blue-deep); transition: color .3s;
+}
+.timer.hurry .timer-ring { stroke: var(--red); }
+.timer.hurry span { color: var(--red); }
+.timer.hurry { animation: pulse .5s ease-in-out infinite; }
+.timer.stopped { opacity: .45; animation: none; }
+.verdict.time { color: var(--yellow-deep); }
 .q-text {
   width: 100%; min-height: 148px;
   display: flex; align-items: center; justify-content: center; text-align: center;
