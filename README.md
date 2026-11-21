@@ -40,10 +40,23 @@ Keep exactly 9 questions (one per grid tile) and 4 options each.
 Question 1 was supplied by the organiser; questions 2–9 were drafted from WHO / Hong Kong
 Department of Health guidance and **should be reviewed by the organiser before the event**.
 
+## Timer
+
+Each question has a 15-second countdown; running out of time counts as a wrong answer.
+Change `QUIZ_TIME_LIMIT` at the top of `js/questions.js` (set it to `0` to turn the timer off).
+
+## Reviewing candidate questions
+
+`review.html` is a phone-friendly page listing 18 candidate questions in three difficulty
+levels (`js/candidates.js`). The reviewer taps 採用 / 不採用 on each, can type a comment, and
+sends the result by WhatsApp. It does not change the game: once 9 are chosen, copy them into
+`js/questions.js`.
+
 ## Files
 
 - `index.html` — page structure (start, grid, question, award screens)
 - `css/style.css` — all styling and animations
 - `js/questions.js` — the question bank
+- `review.html`, `js/candidates.js` — candidate question review page
 - `js/app.js` — game logic, roulette, synthesised sound effects, confetti
 - `assets/backdrop-v9.webp` — event backdrop artwork

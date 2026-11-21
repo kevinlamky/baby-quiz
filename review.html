@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-HK">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>題目審閱 ・ 育嬰知識大挑戰</title>
+  <style>
+    :root {
+      --coral: #f2737b; --coral-deep: #e2525c; --brown: #5b3a1e; --soft: #8a6a50;
+      --green: #2fb86e; --red: #e03a32; --line: #f1ddd5; --bg: #fff6f1;
+      --easy: #3ea6d6; --medium: #f5a800; --hard: #e2525c;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "PingFang HK", "PingFang TC", "Microsoft JhengHei", "Noto Sans TC", sans-serif;
+      font-size: 18px; line-height: 1.6; color: var(--brown); background: var(--bg);
+      padding: 0 16px 150px; -webkit-text-size-adjust: 100%;
+    }
+    main { max-width: 680px; margin: 0 auto; }
+    header.top { padding: 28px 0 8px; text-align: center; }
+    header.top h1 { font-size: 28px; color: var(--coral-deep); line-height: 1.3; }
+    header.top p { color: var(--soft); margin-top: 4px; }
+
+    .howto { background: #fff; border: 2px solid var(--line); border-radius: 20px; padding: 16px 18px; margin: 18px 0 8px; }
+    .howto h2 { font-size: 19px; margin-bottom: 8px; }
+    .howto ol { padding-left: 1.3em; }
+    .howto li { margin: 4px 0; }
+    .howto b { color: var(--coral-deep); }
+
+    .level { margin-top: 30px; }
+    .level-head {
+      position: sticky; top: 0; z-index: 5; background: var(--bg);
+      display: flex; align-items: baseline; gap: 10px; padding: 10px 0 8px;
+    }
+    .level-head h2 { font-size: 23px; color: #fff; padding: 2px 16px; border-radius: 999px; }
+    .level-head span { color: var(--soft); font-size: 16px; }
+    .easy h2, .tag.easy { background: var(--easy); }
+    .medium h2, .tag.medium { background: var(--medium); }
+    .hard h2, .tag.hard { background: var(--hard); }
+
+    .card {
+      background: #fff; border: 3px solid var(--line); border-radius: 22px;
+      padding: 16px 16px 14px; margin: 12px 0; transition: border-color .2s, opacity .2s;
+    }
+    .card.yes { border-color: var(--green); }
+    .card.no { border-color: #d9c8c0; }
+    .card.no .body { opacity: .45; }
+    .card-top { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+    .tag { color: #fff; font-weight: 800; font-size: 15px; padding: 1px 12px; border-radius: 999px; }
+    .note { font-size: 14px; color: var(--soft); background: #fdeee6; padding: 1px 10px; border-radius: 999px; }
+    .q { font-size: 21px; font-weight: 800; line-height: 1.45; margin-bottom: 10px; }
+    .opts { list-style: none; display: grid; gap: 6px; }
+    .opts li { display: flex; gap: 10px; align-items: flex-start; padding: 7px 12px; border-radius: 14px; background: #faf3ef; }
+    .opts li i { font-style: normal; font-weight: 800; color: var(--soft); flex: none; }
+    .opts li.right { background: #e4f8ec; font-weight: 800; color: #17804a; }
+    .opts li.right i { color: #17804a; }
+    .opts li.right::after { content: "✓ 正確答案"; margin-left: auto; font-size: 14px; white-space: nowrap; padding-top: 3px; }
+    .explain { margin-top: 10px; font-size: 16.5px; color: #6b4a30; background: #fff9ec; border-left: 5px solid #ffd43b; padding: 8px 12px; border-radius: 0 12px 12px 0; }
+    .explain b { color: var(--medium); }
+
+    .choose { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
+    .choose button {
+      font: inherit; font-size: 19px; font-weight: 800; padding: 12px 6px; border-radius: 16px;
+      border: 3px solid var(--line); background: #fff; color: var(--soft); cursor: pointer;
+    }
+    .choose button.on.y { background: var(--green); border-color: var(--green); color: #fff; }
+    .choose button.on.n { background: #8d7b72; border-color: #8d7b72; color: #fff; }
+    textarea {
+      width: 100%; margin-top: 10px; font: inherit; font-size: 17px; color: var(--brown);
+      border: 2px solid var(--line); border-radius: 14px; padding: 9px 12px; min-height: 48px; resize: vertical; background: #fffdfb;
+    }
+    textarea:focus { outline: none; border-color: var(--coral); }
+
+    .bar {
+      position: fixed; left: 0; right: 0; bottom: 0; z-index: 10;
+      background: rgba(255, 255, 255, .97); border-top: 2px solid var(--line);
+      box-shadow: 0 -8px 24px rgba(160, 90, 90, .14); padding: 10px 16px calc(12px + env(safe-area-inset-bottom));
+    }
+    .bar-in { max-width: 680px; margin: 0 auto; }
+    .count { display: flex; justify-content: space-between; align-items: baseline; font-weight: 800; margin-bottom: 8px; }
+    .count small { font-weight: 600; color: var(--soft); font-size: 15px; }
+    .count.done #count-text { color: var(--green); }
+    .count.over #count-text { color: var(--red); }
+    .send { display: grid; grid-template-columns: 2fr 1fr; gap: 10px; }
+    .send button {
+      font: inherit; font-size: 19px; font-weight: 800; padding: 13px 6px; border-radius: 16px; border: 0; cursor: pointer;
+    }
+    #btn-wa { background: #25d366; color: #fff; }
+    #btn-copy { background: #f3e6df; color: var(--brown); }
+    .toast {
+      position: fixed; left: 50%; bottom: 150px; transform: translateX(-50%); z-index: 20;
+      background: #4a3424; color: #fff; padding: 9px 20px; border-radius: 999px; font-weight: 700;
+      opacity: 0; pointer-events: none; transition: opacity .25s; white-space: nowrap;
+    }
+    .toast.show { opacity: 1; }
+  </style>
+</head>
+<body>
+<main>
+  <header class="top">
+    <h1>育嬰知識大挑戰<br>題目審閱</h1>
+    <p>共 18 條候選題目，請幫忙選出 9 條</p>
+  </header>
+
+  <section class="howto">
+    <h2>怎樣審閱？</h2>
+    <ol>
+      <li>每條題目下面，按 <b>「✓ 採用」</b> 或 <b>「✗ 不採用」</b>。</li>
+      <li>題目、答案或解說想修改？直接在下面的格子寫低（可以不填）。</li>
+      <li>遊戲需要 <b>9 條題目</b>。選好之後，按最底的綠色按鈕，用 WhatsApp 傳給我。</li>
+    </ol>
+  </section>
+
+  <div id="levels"></div>
+</main>
+
+<div class="bar">
+  <div class="bar-in">
+    <div class="count" id="count"><span id="count-text">已採用 0 / 9 條</span><small id="count-mix"></small></div>
+    <div class="send">
+      <button id="btn-wa" type="button">用 WhatsApp 傳送結果</button>
+      <button id="btn-copy" type="button">複製文字</button>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script src="js/candidates.js?v=1"></script>
+<script>
+(() => {
+  "use strict";
+  const QS = window.QUIZ_CANDIDATES;
+  const NEED = 9;
+  const KEY = "baby-quiz-review-v1";
+  const LEVELS = [
+    ["easy", "初階", "大部分爸媽都答得到"],
+    ["medium", "中階", "要有點育嬰經驗"],
+    ["hard", "高階", "真正的育嬰達人題"],
+  ];
+  const LETTERS = ["A", "B", "C", "D"];
+
+  // { id: { pick: "yes" | "no", note: "..." } } — remembered on this phone so nothing is lost on refresh
+  let state = {};
+  try { state = JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) {}
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} };
+  const esc = (t) => t.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+  const root = document.getElementById("levels");
+  for (const [key, name, desc] of LEVELS) {
+    const sec = document.createElement("section");
+    sec.className = "level " + key;
+    sec.innerHTML = `<div class="level-head"><h2>${name}</h2><span>${desc}</span></div>`;
+    for (const q of QS.filter((x) => x.level === key)) {
+      const card = document.createElement("article");
+      card.className = "card";
+      card.dataset.id = q.id;
+      card.innerHTML = `
+        <div class="body">
+          <div class="card-top"><span class="tag ${key}">${q.id}　${name}</span>${q.note ? `<span class="note">${esc(q.note)}</span>` : ""}</div>
+          <p class="q">${q.icon} ${esc(q.q)}</p>
+          <ul class="opts">${q.options.map((o, i) => `<li class="${i === q.answer ? "right" : ""}"><i>${LETTERS[i]}</i><span>${esc(o)}</span></li>`).join("")}</ul>
+          <p class="explain"><b>解答　</b>${esc(q.explain)}</p>
+        </div>
+        <div class="choose">
+          <button type="button" class="y" data-pick="yes">✓ 採用</button>
+          <button type="button" class="n" data-pick="no">✗ 不採用</button>
+        </div>
+        <textarea rows="1" placeholder="想修改甚麼？（可以不填）"></textarea>`;
+      sec.appendChild(card);
+    }
+    root.appendChild(sec);
+  }
+
+  function paint() {
+    let yes = 0; const mix = { easy: 0, medium: 0, hard: 0 };
+    document.querySelectorAll(".card").forEach((card) => {
+      const s = state[card.dataset.id] || {};
+      card.classList.toggle("yes", s.pick === "yes");
+      card.classList.toggle("no", s.pick === "no");
+      card.querySelectorAll(".choose button").forEach((b) => b.classList.toggle("on", b.dataset.pick === s.pick));
+      if (s.pick === "yes") { yes++; mix[QS.find((q) => q.id === card.dataset.id).level]++; }
+    });
+    const count = document.getElementById("count");
+    count.classList.toggle("done", yes === NEED);
+    count.classList.toggle("over", yes > NEED);
+    document.getElementById("count-text").textContent =
+      `已採用 ${yes} / ${NEED} 條` + (yes === NEED ? " ✓" : yes > NEED ? `（多了 ${yes - NEED} 條）` : "");
+    document.getElementById("count-mix").textContent = `初階 ${mix.easy}・中階 ${mix.medium}・高階 ${mix.hard}`;
+  }
+
+  root.addEventListener("click", (e) => {
+    const btn = e.target.closest(".choose button");
+    if (!btn) return;
+    const id = btn.closest(".card").dataset.id;
+    const s = (state[id] = state[id] || {});
+    s.pick = s.pick === btn.dataset.pick ? undefined : btn.dataset.pick; // tap again to undo
+    save(); paint();
+  });
+  root.addEventListener("input", (e) => {
+    if (e.target.tagName !== "TEXTAREA") return;
+    const id = e.target.closest(".card").dataset.id;
+    (state[id] = state[id] || {}).note = e.target.value;
+    e.target.style.height = "auto"; e.target.style.height = e.target.scrollHeight + 2 + "px";
+    save();
+  });
+  document.querySelectorAll(".card textarea").forEach((t) => { t.value = (state[t.closest(".card").dataset.id] || {}).note || ""; });
+
+  function message() {
+    const ids = (pick) => QS.filter((q) => (state[q.id] || {}).pick === pick).map((q) => q.id);
+    const yes = ids("yes"), no = ids("no"), none = ids(undefined);
+    const notes = QS.filter((q) => ((state[q.id] || {}).note || "").trim()).map((q) => `${q.id}：${state[q.id].note.trim()}`);
+    return [
+      "【育嬰問答 題目審閱】",
+      `✅ 採用（${yes.length} 條）：${yes.join("、") || "—"}`,
+      `❌ 不採用（${no.length} 條）：${no.join("、") || "—"}`,
+      none.length ? `⬜ 未決定（${none.length} 條）：${none.join("、")}` : "",
+      notes.length ? "\n💬 修改意見：\n" + notes.join("\n") : "",
+    ].filter(Boolean).join("\n");
+  }
+
+  function toast(text) {
+    const t = document.getElementById("toast");
+    t.textContent = text; t.classList.add("show");
+    setTimeout(() => t.classList.remove("show"), 2200);
+  }
+
+  document.getElementById("btn-wa").addEventListener("click", () => {
+    // No phone number in the link: WhatsApp opens and she chooses who to send it to.
+    window.open("https://wa.me/?text=" + encodeURIComponent(message()), "_blank");
+  });
+  document.getElementById("btn-copy").addEventListener("click", async () => {
+    const text = message();
+    try { await navigator.clipboard.writeText(text); }
+    catch (e) {
+      const ta = document.createElement("textarea");
+      ta.value = text; document.body.appendChild(ta); ta.select();
+      try { document.execCommand("copy"); } catch (e2) {}
+      ta.remove();
+    }
+    toast("已複製，可以貼到訊息裏傳送");
+  });
+
+  paint();
+})();
+</script>
+</body>
+</html>
