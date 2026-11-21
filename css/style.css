@@ -260,19 +260,37 @@ button:focus { outline: none; }
   margin-right: auto;
 }
 /* countdown ring */
-.timer { position: relative; width: 76px; height: 76px; margin: -13px 6px -13px 0; flex: none; }
-.timer svg { width: 100%; height: 100%; transform: rotate(-90deg); }
-.timer circle { fill: none; stroke-width: 9; }
-.timer-track { stroke: #f4e6df; }
-.timer-ring { stroke: var(--blue-deep); stroke-linecap: round; stroke-dasharray: 207.35; stroke-dashoffset: 0; transition: stroke .3s; }
+.timer { position: relative; width: 86px; height: 93px; margin: -22px 8px -21px 0; flex: none; }
+.timer svg { width: 100%; height: 100%; overflow: visible; transform-origin: 50% 92%; animation: clockRock 1s ease-in-out infinite; }
+.clock-feet path { stroke: var(--blue-deep); stroke-width: 7; stroke-linecap: round; }
+.clock-bell circle { fill: #ffd43b; stroke: var(--yellow-deep); stroke-width: 3; }
+.clock-bell { transform-box: fill-box; transform-origin: 50% 100%; }
+.clock-knob { fill: var(--yellow-deep); }
+.clock-body { fill: var(--blue); stroke: var(--blue-deep); stroke-width: 4; transition: fill .3s, stroke .3s; }
+.clock-face { fill: #fff; }
+/* remaining time shown as a shrinking pie slice on the clock face */
+.timer-ring { fill: none; stroke: #c9edfb; stroke-width: 31; stroke-dasharray: 97.39; stroke-dashoffset: 0; transition: stroke .3s; }
+.clock-cheek { fill: #ffb3ba; }
+.clock-smile { fill: none; stroke: var(--brown); stroke-width: 2.6; stroke-linecap: round; }
 .timer span {
-  position: absolute; inset: 0; display: grid; place-items: center;
-  font-size: 34px; font-weight: 900; color: var(--blue-deep); transition: color .3s;
+  position: absolute; left: 0; right: 0; top: 30px; text-align: center;
+  font-size: 30px; line-height: 1; font-weight: 900; color: var(--blue-deep); transition: color .3s;
 }
-.timer.hurry .timer-ring { stroke: var(--red); }
+@keyframes clockRock { 0%, 100% { transform: rotate(-5deg); } 50% { transform: rotate(5deg); } }
+@keyframes clockRing {
+  0%, 100% { transform: rotate(-7deg) translateX(-2px); }
+  50% { transform: rotate(7deg) translateX(2px); }
+}
+@keyframes bellShake { 0%, 100% { transform: rotate(-14deg); } 50% { transform: rotate(14deg); } }
+/* last 5 seconds: the clock turns red and rings */
+.timer.hurry svg { animation: clockRing .14s linear infinite; }
+.timer.hurry .clock-bell { animation: bellShake .1s linear infinite; }
+.timer.hurry .clock-body { fill: #ff8f8a; stroke: var(--red); }
+.timer.hurry .clock-feet path { stroke: var(--red); }
+.timer.hurry .timer-ring { stroke: #ffd3d0; }
 .timer.hurry span { color: var(--red); }
-.timer.hurry { animation: pulse .5s ease-in-out infinite; }
-.timer.stopped { opacity: .45; animation: none; }
+.timer.stopped svg, .timer.stopped .clock-bell { animation: none; }
+.timer.stopped { opacity: .55; }
 .verdict.time { color: var(--yellow-deep); }
 .q-text {
   width: 100%; min-height: 148px;

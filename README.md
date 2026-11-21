@@ -47,7 +47,7 @@ Change `QUIZ_TIME_LIMIT` at the top of `js/questions.js` (set it to `0` to turn 
 
 ## Reviewing candidate questions
 
-`review.html` is a phone-friendly page listing 18 candidate questions in three difficulty
+`review.html` is a phone-friendly page listing 30 candidate questions in three difficulty
 levels (`js/candidates.js`). The reviewer taps 採用 / 不採用 on each, can type a comment, and
 sends the result by WhatsApp. It does not change the game: once 9 are chosen, copy them into
 `js/questions.js`.
@@ -58,5 +58,6 @@ sends the result by WhatsApp. It does not change the game: once 9 are chosen, co
 - `css/style.css` — all styling and animations
 - `js/questions.js` — the question bank
 - `review.html`, `js/candidates.js` — candidate question review page
+- `docs/whatsapp-review.txt` — the 30 candidate questions as a ready-to-paste WhatsApp message
 - `js/app.js` — game logic, roulette, synthesised sound effects, confetti
 - `assets/backdrop-v9.webp` — event backdrop artwork

@@ -285,7 +285,7 @@
 
   /* ---------- countdown ---------- */
 
-  const RING = 2 * Math.PI * 33;
+  const RING = 2 * Math.PI * 15.5; // circumference of the pie-slice circle on the clock face
   let timerId = 0;
 
   function paintTimer(left) {
