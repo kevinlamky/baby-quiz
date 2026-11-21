@@ -3,7 +3,8 @@
 ## Purpose
 
 A quiz game for the kindergarten's public event 「愛伴成長 — 嬰兒成長禮 2026」. Participants play
-one at a time: a roulette picks 3 random questions out of a 3×3 grid of 9 baby-care questions,
+one at a time: they choose a difficulty (初階 / 中階 / 高階), then a roulette picks 3 random
+questions out of a 3×3 grid of that level's 9 baby-care questions,
 each with four options. After every answer the correct option and an explanation are shown.
 3 correct = gold medal, 2 = silver, 1 = bronze, 0 = an encouragement screen.
 
@@ -24,6 +25,7 @@ Nothing to install.
 | Step | Button | Keyboard |
 | --- | --- | --- |
 | Start | 開始挑戰 | `Enter` / `Space` |
+| Choose difficulty | 初階 / 中階 / 高階 | `1` / `2` / `3` |
 | Draw a question | 🎲 抽題目 | `Enter` / `Space` |
 | Answer | click an option | `1`–`4` or `A`–`D` |
 | Next question / see result | 下一題 / 看成績 | `Enter` / `Space` |
@@ -33,12 +35,14 @@ Top-right buttons: 🔊 sound on/off, ⛶ full screen, ↺ 重新開始 (reset m
 
 ## Editing the questions
 
-All 9 questions live in `js/questions.js`. Edit the text, save, and refresh the page.
+All 27 questions live in `js/questions.js`, grouped into three levels (初階, 中階, 高階) of 9
+each. Edit the text, save, and refresh the page.
 `answer` is the position of the correct option: `0` = A, `1` = B, `2` = C, `3` = D.
-Keep exactly 9 questions (one per grid tile) and 4 options each.
+Keep exactly 9 questions per level (one per grid tile) and 4 options each.
 
-Question 1 was supplied by the organiser; questions 2–9 were drafted from WHO / Hong Kong
-Department of Health guidance and **should be reviewed by the organiser before the event**.
+The first 初階 question and the 中階 toilet-training question were supplied by the organiser;
+the rest were drafted from WHO / Hong Kong Department of Health guidance and chosen by the
+organiser from a list of 30 candidates.
 
 ## Timer
 
@@ -49,12 +53,12 @@ Change `QUIZ_TIME_LIMIT` at the top of `js/questions.js` (set it to `0` to turn 
 
 `review.html` is a phone-friendly page listing 30 candidate questions in three difficulty
 levels (`js/candidates.js`). The reviewer taps 採用 / 不採用 on each, can type a comment, and
-sends the result by WhatsApp. It does not change the game: once 9 are chosen, copy them into
-`js/questions.js`.
+sends the result by WhatsApp. It is a record of the review round only and does not change
+the game; the questions the game uses are in `js/questions.js`.
 
 ## Files
 
-- `index.html` — page structure (start, grid, question, award screens)
+- `index.html` — page structure (start, difficulty, grid, question, award screens)
 - `css/style.css` — all styling and animations
 - `js/questions.js` — the question bank
 - `review.html`, `js/candidates.js` — candidate question review page

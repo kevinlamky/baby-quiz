@@ -1,12 +1,13 @@
 /* 愛伴成長 ・ 育嬰知識大挑戰 — game logic
  *
- * Flow: start → [grid roulette → question → answer + explanation] × 3 → award → reset.
+ * Flow: start → choose level → [grid roulette → question → answer + explanation] × 3 → award → reset.
  * No dependencies and no network: works by double-clicking index.html.
  */
 (() => {
   "use strict";
 
-  const QUESTIONS = window.QUIZ_QUESTIONS;
+  const LEVELS = window.QUIZ_LEVELS;
+  let QUESTIONS = LEVELS[0].questions; // the 9 questions of the chosen level
   const ROUNDS = 3;
   const TIME_LIMIT = window.QUIZ_TIME_LIMIT === undefined ? 15 : window.QUIZ_TIME_LIMIT; // seconds, 0 = off
   const LETTERS = ["A", "B", "C", "D"];
@@ -22,13 +23,13 @@
   const $ = (s) => document.querySelector(s);
   const stage = $("#stage");
   const screens = {
-    start: $("#screen-start"), grid: $("#screen-grid"),
+    start: $("#screen-start"), level: $("#screen-level"), grid: $("#screen-grid"),
     question: $("#screen-question"), result: $("#screen-result"),
   };
   const gridEl = $("#grid");
   const modal = $("#modal");
 
-  const state = { screen: "start", status: [], results: [], current: -1, busy: false, answered: false, gen: 0 };
+  const state = { screen: "start", level: 0, status: [], results: [], current: -1, busy: false, answered: false, gen: 0 };
 
   /* ---------- helpers ---------- */
 
@@ -207,6 +208,7 @@
     });
     const n = state.results.length + 1;
     $("#grid-round").textContent = `第 ${n} 題`;
+    $("#grid-level").textContent = `${LEVELS[state.level].icon} ${LEVELS[state.level].name}`;
     $("#grid-title").textContent = n === 1 ? "按下按鈕，抽出你的題目！" : n === ROUNDS ? "最後一題，加油！" : "再抽下一題！";
     $("#btn-spin").disabled = false;
     renderDots($("#grid-dots"));
@@ -401,7 +403,7 @@
     $("#medal").innerHTML = tier.key === "none" ? '<div class="heart">💖</div>' : medalSVG(tier.key);
     $("#award-title").textContent = tier.title;
     $("#award-sub").innerHTML = tier.sub;
-    $("#chips").innerHTML = state.results
+    $("#chips").innerHTML = `<span class="chip lvl">${LEVELS[state.level].icon} ${LEVELS[state.level].name}</span>` + state.results
       .map((r, i) => `<span class="chip ${r.correct ? "ok" : "no"}">第 ${i + 1} 題 ${r.correct ? "✓" : "✗"}</span>`)
       .join("");
     show("result");
@@ -436,9 +438,31 @@
     parts = [];
   }
 
+  function renderLevels() {
+    const box = $("#levels");
+    LEVELS.forEach((lv, i) => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = `level-card level-${lv.key}`;
+      b.innerHTML = `<span class="level-icon">${lv.icon}</span><span class="level-name">${lv.name}</span>` +
+        `<span class="level-hint">${lv.hint}</span><span class="level-key">${i + 1}</span>`;
+      b.addEventListener("click", () => chooseLevel(i));
+      box.appendChild(b);
+    });
+  }
+
   function startGame() {
     Sound.init();
     Sound.click();
+    resetState();
+    show("level");
+  }
+
+  function chooseLevel(i) {
+    if (state.screen !== "level" || !LEVELS[i]) return;
+    Sound.click();
+    state.level = i;
+    QUESTIONS = LEVELS[i].questions;
     resetState();
     renderGrid();
     show("grid");
@@ -455,7 +479,7 @@
   function askReset() {
     if (state.screen === "start") return;
     // Nothing to lose once the medal has been awarded — skip the confirmation.
-    if (state.screen === "result") return backToStart();
+    if (state.screen === "result" || state.screen === "level") return backToStart();
     modal.classList.add("open");
   }
   function closeModal() { modal.classList.remove("open"); }
@@ -485,7 +509,7 @@
     }
   });
 
-  // Keyboard: Enter/Space = main button, 1–4 or A–D = answer, Esc = close dialog, F = fullscreen.
+  // Keyboard: Enter/Space = main button, 1–3 = level, 1–4 or A–D = answer, Esc = close dialog, F = fullscreen.
   document.addEventListener("keydown", (e) => {
     if (e.repeat || e.metaKey || e.ctrlKey || e.altKey) return;
     const key = e.key.toLowerCase();
@@ -497,12 +521,14 @@
     if (key === "enter" || key === " ") {
       e.preventDefault();
       const main = { start: "#btn-start", grid: "#btn-spin", question: "#btn-next", result: "#btn-again" }[state.screen];
+      if (!main) return;
       const btn = $(main);
       if (state.screen === "result" && !$("#result-panel").classList.contains("reveal")) return;
       if (!btn.disabled) btn.click();
       return;
     }
     if (key === "f") return $("#btn-full").click();
+    if (state.screen === "level") return chooseLevel("123".indexOf(key));
     if (state.screen === "question") {
       const k = "1234".indexOf(key) >= 0 ? "1234".indexOf(key) : "abcd".indexOf(key);
       if (k >= 0) answer(k);
@@ -516,5 +542,6 @@
 
   fit();
   makeFloaters();
+  renderLevels();
   resetState();
 })();

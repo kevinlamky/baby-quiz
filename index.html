@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
   <title>愛伴成長 ・ 育嬰知識大挑戰</title>
   <link rel="preload" as="image" href="assets/backdrop-v9.webp">
-  <link rel="stylesheet" href="css/style.css?v=14">
+  <link rel="stylesheet" href="css/style.css?v=15">
 </head>
 <body>
   <div id="bg" aria-hidden="true"></div>
@@ -31,11 +31,21 @@
       </div>
     </section>
 
+    <!-- 1b. 選擇難度 -->
+    <section id="screen-level" class="screen">
+      <div class="panel panel-level">
+        <h2 class="level-title">請選擇挑戰難度</h2>
+        <div class="levels" id="levels"></div>
+        <p class="level-note">每個難度有 9 條題目，抽 3 題作答</p>
+      </div>
+    </section>
+
     <!-- 2. 九宮格抽題 -->
     <section id="screen-grid" class="screen">
       <div class="panel panel-grid">
         <header class="panel-head">
           <div class="pill" id="grid-round">第 1 題</div>
+          <div class="q-badge" id="grid-level"></div>
           <div class="dots" id="grid-dots"></div>
         </header>
         <h2 class="grid-title" id="grid-title">按下按鈕，抽出你的題目！</h2>
@@ -123,7 +133,7 @@
     <canvas id="fx" width="1600" height="900" aria-hidden="true"></canvas>
   </main>
 
-  <script src="js/questions.js?v=14"></script>
-  <script src="js/app.js?v=14"></script>
+  <script src="js/questions.js?v=15"></script>
+  <script src="js/app.js?v=15"></script>
 </body>
 </html>
