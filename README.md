@@ -34,8 +34,11 @@ Nothing to install.
 Top-right buttons: ↺ 重新開始 (reset mid-game, asks to confirm), ⛶ full screen, 🔊 all sound
 on/off, 🎵 background music on/off.
 
-Background music is a gentle music-box loop generated in the browser (no audio file). It starts
-when 開始挑戰 is first pressed. To change its loudness or speed, edit `VOLUME` and `STEP` in the
+Background music is a gentle music-box loop generated in the browser (no audio file). It loops
+for as long as the page is open. It starts when the page opens if the browser allows sound
+without a click; most browsers block that, so otherwise it starts on the first click, tap or key
+press anywhere on the page. To have it play with no click on the event computer, quit Chrome
+completely and start it with `--autoplay-policy=no-user-gesture-required`. To change its loudness or speed, edit `VOLUME` and `STEP` in the
 `Music` object in `js/app.js`.
 
 ## Editing the questions

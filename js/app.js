@@ -143,6 +143,8 @@
     },
     // Queue notes a little ahead of the clock so a busy or background tab does not stutter.
     schedule() {
+      // The browser can pause audio (tab in the background, sleep, a phone call). Wake it up again.
+      if (Sound.ctx.state !== "running") Sound.ctx.resume().catch(() => {});
       const now = Sound.ctx.currentTime;
       if (this.nextAt < now) this.nextAt = now + 0.05;
       while (this.nextAt < now + 1.2) {
@@ -610,6 +612,13 @@
   window.addEventListener("orientationchange", () => setTimeout(fit, 200));
   document.addEventListener("dragstart", (e) => e.preventDefault());
   document.addEventListener("contextmenu", (e) => e.preventDefault());
+
+  // Music starts as soon as the page opens if the browser allows sound without a click.
+  // Most browsers do not, so the very first click, tap or key press anywhere starts it instead.
+  function wakeAudio() { Sound.init(); Music.start(); }
+  ["pointerdown", "touchstart", "keydown"].forEach((ev) => document.addEventListener(ev, wakeAudio, true));
+  document.addEventListener("visibilitychange", () => { if (!document.hidden && Sound.ctx) Sound.ctx.resume().catch(() => {}); });
+  wakeAudio();
 
   fit();
   makeFloaters();
