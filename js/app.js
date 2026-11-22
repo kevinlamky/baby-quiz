@@ -78,6 +78,7 @@
       osc.connect(gain).connect(this.ctx.destination);
       osc.start(t);
       osc.stop(t + dur + 0.05);
+      Music.duck(at + dur);
     },
     hurry() { this.tone(988, 0.09, { type: "square", vol: 0.07 }); },
     click() { this.tone(660, 0.09, { type: "triangle", slide: 990 }); },
@@ -101,7 +102,8 @@
 
   const Music = {
     on: true, gain: null, timer: 0, step: 0, nextAt: 0,
-    VOLUME: 0.5, STEP: 0.27, // seconds per eighth note (about 111 bpm)
+    VOLUME: 0.28, DUCK: 0.3, STEP: 0.27, // DUCK = share of the volume kept while a game sound plays
+    duckTimer: 0, duckEnd: 0, // seconds per eighth note (about 111 bpm)
     // 16 bars of 8 eighth-notes each. "." = rest.
     MELODY: (
       "E5 . G5 . C6 . G5 . | A5 . G5 E5 C5 . E5 . | F5 . A5 . C6 . A5 . | G5 . F5 D5 B4 . D5 . | " +
@@ -132,6 +134,17 @@
     level() { return this.on && !Sound.muted ? this.VOLUME : 0; },
     refresh() {
       if (this.gain) this.gain.gain.setTargetAtTime(this.level(), Sound.ctx.currentTime, 0.08);
+    },
+    // Turn the music down while a game sound effect is playing, then bring it back gently.
+    duck(seconds) {
+      if (!this.gain) return;
+      const now = Sound.ctx.currentTime;
+      this.duckEnd = Math.max(this.duckEnd, now + seconds);
+      this.gain.gain.setTargetAtTime(this.level() * this.DUCK, now, 0.04);
+      clearTimeout(this.duckTimer);
+      this.duckTimer = setTimeout(() => {
+        if (this.gain) this.gain.gain.setTargetAtTime(this.level(), Sound.ctx.currentTime, 0.35);
+      }, (this.duckEnd - now + 0.25) * 1000);
     },
     start() {
       if (!Sound.ctx || this.timer) return;
