@@ -101,7 +101,7 @@
   /* ---------- background music (synthesised music-box loop, no audio files) ---------- */
 
   const Music = {
-    on: true, gain: null, timer: 0, step: 0, nextAt: 0, noise: null, steps: null,
+    on: true, gain: null, timer: 0, step: 0, nextAt: 0, steps: null,
     VOLUME: 0.28, DUCK: 0.3, STEP: 0.25, // DUCK = share of the volume kept while a game sound plays; STEP = seconds per eighth note (120 bpm)
     duckTimer: 0, duckEnd: 0,
     // 16 bars in 4/4, written as note/length (length in eighth notes, R = rest). Shape: A A' B A''.
@@ -144,8 +144,6 @@
         add(at, { f: this.freq(same ? fifth : root), dur: 0.42, vol: 0.1, type: "triangle" });
         add(at + 2, { f: this.freq(n1), dur: 0.2, vol: 0.035, type: "triangle" });
         add(at + 2, { f: this.freq(n2), dur: 0.2, vol: 0.035, type: "triangle" });
-        add(at + 1, { shake: 0.012 });
-        add(at + 3, { shake: 0.02 });
       });
       this.steps = steps;
       this.length = this.CHORDS.length * 4;
@@ -162,21 +160,6 @@
       osc.connect(g).connect(this.gain);
       osc.start(at);
       osc.stop(at + dur + 0.05);
-    },
-    // A tiny soft shaker on the off-beats, for a little bounce.
-    shake(at, vol) {
-      const ctx = Sound.ctx;
-      const src = ctx.createBufferSource();
-      const hp = ctx.createBiquadFilter();
-      const g = ctx.createGain();
-      src.buffer = this.noise;
-      hp.type = "highpass";
-      hp.frequency.value = 6000;
-      g.gain.setValueAtTime(vol, at);
-      g.gain.exponentialRampToValueAtTime(0.0001, at + 0.05);
-      src.connect(hp).connect(g).connect(this.gain);
-      src.start(at);
-      src.stop(at + 0.06);
     },
     level() { return this.on && !Sound.muted ? this.VOLUME : 0; },
     refresh() {
@@ -197,9 +180,6 @@
       if (!Sound.ctx || this.timer) return;
       const ctx = Sound.ctx;
       this.build();
-      this.noise = ctx.createBuffer(1, Math.ceil(ctx.sampleRate * 0.06), ctx.sampleRate);
-      const data = this.noise.getChannelData(0);
-      for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
       this.gain = ctx.createGain();
       this.gain.gain.value = this.level();
       this.gain.connect(ctx.destination);
@@ -214,8 +194,7 @@
       if (this.nextAt < now) this.nextAt = now + 0.05;
       while (this.nextAt < now + 1.2) {
         for (const ev of this.steps[this.step % this.length] || []) {
-          if (ev.shake) this.shake(this.nextAt, ev.shake);
-          else this.note(ev.f, this.nextAt, ev.dur, ev.vol, ev.type);
+          this.note(ev.f, this.nextAt, ev.dur, ev.vol, ev.type);
         }
         this.step++;
         this.nextAt += this.STEP;
