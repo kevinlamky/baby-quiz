@@ -97,6 +97,68 @@
     gentle() { [392, 494, 587, 784].forEach((f, i) => this.tone(f, 0.5, { type: "sine", at: i * 0.18, vol: 0.16 })); },
   };
 
+  /* ---------- background music (synthesised music-box loop, no audio files) ---------- */
+
+  const Music = {
+    on: true, gain: null, timer: 0, step: 0, nextAt: 0,
+    VOLUME: 0.5, STEP: 0.27, // seconds per eighth note (about 111 bpm)
+    // 16 bars of 8 eighth-notes each. "." = rest.
+    MELODY: (
+      "E5 . G5 . C6 . G5 . | A5 . G5 E5 C5 . E5 . | F5 . A5 . C6 . A5 . | G5 . F5 D5 B4 . D5 . | " +
+      "E5 . G5 . C6 . E6 . | D6 . C6 A5 E5 . A5 . | F5 A5 C6 A5 G5 B5 D6 B5 | C6 . G5 . E5 . C5 . | " +
+      "A5 . C6 . F5 . A5 . | G5 . E5 . C5 . E5 . | F5 . D5 F5 A5 . F5 . | G5 . B5 . D6 . B5 . | " +
+      "A5 . C6 . F6 . C6 . | E6 . C6 G5 E5 . G5 . | F5 A5 D6 A5 D6 B5 G5 . | C6 . . . G5 . C5 ."
+    ).split(" ").filter((x) => x !== "|"),
+    // Two bass notes per bar (beats 1 and 3).
+    BASS: ("C3 G3 A2 E3 F2 C3 G2 D3 C3 G3 A2 E3 F2 G2 C3 G2 " +
+           "F2 C3 C3 G3 D3 A3 G2 D3 F2 C3 C3 G3 D3 G2 C3 G2").split(" "),
+    freq(name) {
+      const semis = { C: -9, D: -7, E: -5, F: -4, G: -2, A: 0, B: 2 }[name[0]] + (Number(name[1]) - 4) * 12;
+      return 440 * Math.pow(2, semis / 12);
+    },
+    note(freq, at, dur, vol, type) {
+      const ctx = Sound.ctx;
+      const osc = ctx.createOscillator();
+      const g = ctx.createGain();
+      osc.type = type;
+      osc.frequency.value = freq;
+      g.gain.setValueAtTime(0.0001, at);
+      g.gain.exponentialRampToValueAtTime(vol, at + 0.012);
+      g.gain.exponentialRampToValueAtTime(0.0001, at + dur);
+      osc.connect(g).connect(this.gain);
+      osc.start(at);
+      osc.stop(at + dur + 0.05);
+    },
+    level() { return this.on && !Sound.muted ? this.VOLUME : 0; },
+    refresh() {
+      if (this.gain) this.gain.gain.setTargetAtTime(this.level(), Sound.ctx.currentTime, 0.08);
+    },
+    start() {
+      if (!Sound.ctx || this.timer) return;
+      this.gain = Sound.ctx.createGain();
+      this.gain.gain.value = this.level();
+      this.gain.connect(Sound.ctx.destination);
+      this.nextAt = Sound.ctx.currentTime + 0.3;
+      this.timer = setInterval(() => this.schedule(), 200);
+    },
+    // Queue notes a little ahead of the clock so a busy or background tab does not stutter.
+    schedule() {
+      const now = Sound.ctx.currentTime;
+      if (this.nextAt < now) this.nextAt = now + 0.05;
+      while (this.nextAt < now + 1.2) {
+        const i = this.step % this.MELODY.length;
+        const m = this.MELODY[i];
+        if (m !== ".") {
+          this.note(this.freq(m), this.nextAt, 0.9, 0.11, "sine");
+          this.note(this.freq(m) * 2, this.nextAt, 0.35, 0.025, "sine"); // music-box sparkle
+        }
+        if (i % 4 === 0) this.note(this.freq(this.BASS[i / 4]), this.nextAt, 1.0, 0.1, "triangle");
+        this.step++;
+        this.nextAt += this.STEP;
+      }
+    },
+  };
+
   /* ---------- confetti ---------- */
 
   const fx = $("#fx");
@@ -453,6 +515,7 @@
 
   function startGame() {
     Sound.init();
+    Music.start();
     Sound.click();
     resetState();
     show("level");
@@ -499,6 +562,14 @@
     Sound.muted = !Sound.muted;
     e.currentTarget.textContent = Sound.muted ? "🔇" : "🔊";
     e.currentTarget.classList.toggle("off", Sound.muted);
+    Music.refresh();
+  });
+  $("#btn-music").addEventListener("click", (e) => {
+    Sound.init();
+    Music.on = !Music.on;
+    Music.start();
+    Music.refresh();
+    e.currentTarget.classList.toggle("off", !Music.on);
   });
   $("#btn-full").addEventListener("click", () => {
     const d = document;
