@@ -101,21 +101,54 @@
   /* ---------- background music (synthesised music-box loop, no audio files) ---------- */
 
   const Music = {
-    on: true, gain: null, timer: 0, step: 0, nextAt: 0,
-    VOLUME: 0.28, DUCK: 0.3, STEP: 0.27, // DUCK = share of the volume kept while a game sound plays; STEP = seconds per eighth note
+    on: true, gain: null, timer: 0, step: 0, nextAt: 0, noise: null, steps: null,
+    VOLUME: 0.28, DUCK: 0.3, STEP: 0.25, // DUCK = share of the volume kept while a game sound plays; STEP = seconds per eighth note (120 bpm)
     duckTimer: 0, duckEnd: 0,
-    // One 8-bar motif (8 eighth-notes per bar, "." = rest), looped for ever.
-    // Every bar is the same rising-and-falling broken chord, one note per beat. Keeping to
-    // chord notes and leaving a rest between notes means a ringing note never clashes with the next.
-    MELODY: (
-      "E5 . G5 . C6 . G5 . | C5 . E5 . A5 . E5 . | F5 . A5 . C6 . A5 . | D5 . G5 . B5 . G5 . | " +
-      "E5 . G5 . C6 . E6 . | C6 . A5 . E5 . A5 . | F5 . A5 . B5 . D6 . | C6 . G5 . E5 . C5 ."
-    ).split(" ").filter((x) => x !== "|"),
-    // Two bass notes per bar (beats 1 and 3): chords C, Am, F, G, C, Am, F–G, C.
-    BASS: "C3 G3 A2 E3 F2 C3 G2 D3 C3 G3 A2 E3 F2 G2 C3 G2".split(" "),
+    // 16 bars in 4/4, written as note/length (length in eighth notes, R = rest). Shape: A A' B A''.
+    // Each note stops ringing when the next one starts, so neighbouring notes never blur together.
+    MELODY:
+      "G5/1 G5/1 E5/2 G5/1 G5/1 E5/2 | C6/2 A5/2 G5/4 | A5/1 A5/1 F5/2 A5/1 A5/1 C6/2 | B5/2 G5/2 D6/4 | " +
+      "G5/1 G5/1 E5/2 G5/1 G5/1 E5/2 | C6/2 A5/2 G5/4 | A5/1 C6/1 A5/1 F5/1 G5/1 B5/1 D6/2 | C6/2 E6/2 C6/4 | " +
+      "F5/2 A5/2 C6/2 A5/2 | G5/2 E5/1 G5/1 C6/4 | F5/2 A5/2 D6/2 A5/2 | G5/1 A5/1 B5/1 C6/1 D6/2 R/2 | " +
+      "G5/1 G5/1 E5/2 G5/1 G5/1 E6/2 | E6/1 C6/1 A5/2 C6/2 A5/2 | A5/1 C6/1 F6/2 D6/1 B5/1 G5/2 | C6/2 G5/2 C6/2 R/2",
+    // The chord for each half bar. The left hand plays "oom-pah": a bass note, then a soft chord.
+    CHORDS: "C C C C F F G G  C C C C F G C C  F F C C Dm Dm G G  C C Am Am F G C C".split(/\s+/),
+    // chord: [bass root, alternate bass (the fifth), the two notes of the soft "pah" chord]
+    CHORD: {
+      C: ["C3", "G2", "E4", "G4"], F: ["F3", "C3", "F4", "A4"], G: ["G2", "D3", "G4", "B4"],
+      Dm: ["D3", "A2", "F4", "A4"], Am: ["A2", "E3", "C4", "E4"],
+    },
     freq(name) {
       const semis = { C: -9, D: -7, E: -5, F: -4, G: -2, A: 0, B: 2 }[name[0]] + (Number(name[1]) - 4) * 12;
       return 440 * Math.pow(2, semis / 12);
+    },
+    // Turn the score above into a list of what to play on each eighth-note step.
+    build() {
+      const steps = [];
+      const add = (i, ev) => (steps[i] = steps[i] || []).push(ev);
+      let i = 0;
+      for (const tok of this.MELODY.split(" ")) {
+        if (tok === "|") continue;
+        const [name, len] = tok.split("/");
+        if (name !== "R") {
+          const f = this.freq(name), dur = Math.min(len * this.STEP * 0.96, 0.8);
+          add(i, { f, dur, vol: 0.11, type: "sine" });
+          add(i, { f: f * 2, dur: Math.min(dur, 0.3), vol: 0.028, type: "sine" }); // bell-like sparkle
+        }
+        i += Number(len);
+      }
+      this.CHORDS.forEach((c, h) => {
+        const [root, fifth, n1, n2] = this.CHORD[c];
+        const at = h * 4;
+        const same = h % 2 === 1 && this.CHORDS[h - 1] === c; // second half of a bar on the same chord
+        add(at, { f: this.freq(same ? fifth : root), dur: 0.42, vol: 0.1, type: "triangle" });
+        add(at + 2, { f: this.freq(n1), dur: 0.2, vol: 0.035, type: "triangle" });
+        add(at + 2, { f: this.freq(n2), dur: 0.2, vol: 0.035, type: "triangle" });
+        add(at + 1, { shake: 0.012 });
+        add(at + 3, { shake: 0.02 });
+      });
+      this.steps = steps;
+      this.length = this.CHORDS.length * 4;
     },
     note(freq, at, dur, vol, type) {
       const ctx = Sound.ctx;
@@ -129,6 +162,21 @@
       osc.connect(g).connect(this.gain);
       osc.start(at);
       osc.stop(at + dur + 0.05);
+    },
+    // A tiny soft shaker on the off-beats, for a little bounce.
+    shake(at, vol) {
+      const ctx = Sound.ctx;
+      const src = ctx.createBufferSource();
+      const hp = ctx.createBiquadFilter();
+      const g = ctx.createGain();
+      src.buffer = this.noise;
+      hp.type = "highpass";
+      hp.frequency.value = 6000;
+      g.gain.setValueAtTime(vol, at);
+      g.gain.exponentialRampToValueAtTime(0.0001, at + 0.05);
+      src.connect(hp).connect(g).connect(this.gain);
+      src.start(at);
+      src.stop(at + 0.06);
     },
     level() { return this.on && !Sound.muted ? this.VOLUME : 0; },
     refresh() {
@@ -147,10 +195,15 @@
     },
     start() {
       if (!Sound.ctx || this.timer) return;
-      this.gain = Sound.ctx.createGain();
+      const ctx = Sound.ctx;
+      this.build();
+      this.noise = ctx.createBuffer(1, Math.ceil(ctx.sampleRate * 0.06), ctx.sampleRate);
+      const data = this.noise.getChannelData(0);
+      for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
+      this.gain = ctx.createGain();
       this.gain.gain.value = this.level();
-      this.gain.connect(Sound.ctx.destination);
-      this.nextAt = Sound.ctx.currentTime + 0.3;
+      this.gain.connect(ctx.destination);
+      this.nextAt = ctx.currentTime + 0.3;
       this.timer = setInterval(() => this.schedule(), 200);
     },
     // Queue notes a little ahead of the clock so a busy or background tab does not stutter.
@@ -160,13 +213,10 @@
       const now = Sound.ctx.currentTime;
       if (this.nextAt < now) this.nextAt = now + 0.05;
       while (this.nextAt < now + 1.2) {
-        const i = this.step % this.MELODY.length;
-        const m = this.MELODY[i];
-        if (m !== ".") {
-          this.note(this.freq(m), this.nextAt, 0.9, 0.11, "sine");
-          this.note(this.freq(m) * 2, this.nextAt, 0.35, 0.025, "sine"); // music-box sparkle
+        for (const ev of this.steps[this.step % this.length] || []) {
+          if (ev.shake) this.shake(this.nextAt, ev.shake);
+          else this.note(ev.f, this.nextAt, ev.dur, ev.vol, ev.type);
         }
-        if (i % 4 === 0) this.note(this.freq(this.BASS[i / 4]), this.nextAt, 1.0, 0.1, "triangle");
         this.step++;
         this.nextAt += this.STEP;
       }

@@ -34,7 +34,8 @@ Nothing to install.
 Top-right buttons: ↺ 重新開始 (reset mid-game, asks to confirm), ⛶ full screen, 🔊 all sound
 on/off, 🎵 background music on/off.
 
-Background music is a gentle music-box loop generated in the browser (no audio file). It loops
+Background music is a bouncy nursery-style loop (bell melody, oom-pah bass, soft shaker)
+generated in the browser (no audio file). The notes are written out in `MELODY` and `CHORDS`. It loops
 for as long as the page is open. It starts when the page opens if the browser allows sound
 without a click; most browsers block that, so otherwise it starts on the first click, tap or key
 press anywhere on the page. To have it play with no click on the event computer, quit Chrome
